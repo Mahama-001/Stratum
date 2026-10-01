@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@theme {
+  --color-custom-bg: #070708;
+  --color-custom-sidebar: #0d0e0f;
+  --color-custom-card-bg: #101112;
+  --color-custom-panel: #111214;
+  --color-custom-divider: #232426;
+  --color-custom-divider-light: #1B1C1E;
+  --color-custom-text-muted: #9A9DA3;
+  --color-custom-btn-primary: #5E6BFF;
+  --color-on-surface: #e5e2e3;
+  --color-on-surface-variant: #c6c5d8;
+  --color-secondary: #50d8e9;
+  --color-emerald: #10b981;
+  --color-amber: #f59e0b;
+  --color-crimson: #ef4444;
+  --color-neon-lime: #E5FD17;
+  --color-quote-green: #C4FF44;
+  --color-quote-cyan: #D1EBEB;
+  
+  --font-manrope: var(--font-manrope), 'Manrope', sans-serif;
+  --font-inter: var(--font-inter), 'Inter', sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: #070708;
+    color: #e5e2e3;
+    font-family: var(--font-inter), 'Inter', -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-manrope), 'Manrope', -apple-system, sans-serif;
+    letter-spacing: -0.04em;
+  }
+}
+
+.font-mono-data {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.font-h3 {
+  font-family: var(--font-manrope), 'Manrope', sans-serif;
+}
+
+.font-h2 {
+  font-family: var(--font-manrope), 'Manrope', sans-serif;
+}
+
+.font-h1 {
+  font-family: var(--font-manrope), 'Manrope', sans-serif;
+}
+
+.text-hero-headline {
+  font-size: clamp(38px, 5.5vw, 76px);
+  line-height: 1.08;
+  letter-spacing: -0.055em;
+  font-weight: 600;
+}
+
+.dot-pattern {
+  background-image: radial-gradient(#232426 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.glass-panel {
+  background: rgba(16, 17, 18, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.inner-glow {
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+}
+
+.thin-border {
+  border: 1px solid #232426;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070708;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #232426;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #35363a;
+}
