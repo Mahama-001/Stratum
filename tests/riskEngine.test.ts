@@ -111,3 +111,91 @@ test('Hard Block triggers when risk breaches remaining daily loss limit', () => 
   assert.strictEqual(res.severity, 'CRITICAL_BLOCK');
   assert.match(res.warningMessage || '', /HARD RULE BLOCK/);
 });
+
+test('FundedNext Stellar 6K - Challenge rules and 3% max risk rule', () => {
+  const preset = PROP_FIRM_PRESETS['FUNDEDNEXT_STELLAR_6K'];
+  assert.strictEqual(preset.startingBalance, 6000);
+  assert.strictEqual(preset.dailyLossLimitPercent, 5.0); // $300
+  assert.strictEqual(preset.maxDrawdownPercent, 10.0); // $600
+  assert.strictEqual(preset.maxRiskPerTradePercent, 3.0);
+
+  // Normal 0.5% risk ($30)
+  const safeRes = calculatePositionRisk({
+    accountBalance: 6000,
+    currentEquity: 6000,
+    todayRealizedPnL: 0,
+    todayStartingBalance: 6000,
+    firmPreset: preset,
+    selectedAsset: mockEurUsd,
+    entryPrice: 1.0850,
+    stopLossPrice: 1.0835, // 15 pips
+    takeProfitPrice: 1.0880, // 30 pips
+    targetRiskPercent: 0.5 // $30
+  });
+
+  assert.strictEqual(safeRes.dollarRisk, 30);
+  assert.strictEqual(safeRes.dailyMaxLossLimitDollar, 300);
+  assert.strictEqual(safeRes.maxOverallLossLimitDollar, 600);
+  assert.strictEqual(safeRes.isHardBlocked, false);
+
+  // Attempting 4% risk (exceeds FundedNext 3% max risk cap)
+  const breachRes = calculatePositionRisk({
+    accountBalance: 6000,
+    currentEquity: 6000,
+    todayRealizedPnL: 0,
+    todayStartingBalance: 6000,
+    firmPreset: preset,
+    selectedAsset: mockEurUsd,
+    entryPrice: 1.0850,
+    stopLossPrice: 1.0835,
+    takeProfitPrice: 1.0880,
+    targetRiskPercent: 4.0 // 4% > 3%
+  });
+
+  assert.strictEqual(breachRes.isHardBlocked, true);
+  assert.strictEqual(breachRes.maxRiskCapExceeded, true);
+  assert.match(breachRes.warningMessage || '', /3% risk-per-trade rule/);
+});
+
+test('Topstep Futures - Sizing in contracts and enforcing max contract limit', () => {
+  const preset = PROP_FIRM_PRESETS['TOPSTEP_50K']; // max 5 contracts
+  assert.strictEqual(preset.instrumentType, 'FUTURES');
+  assert.strictEqual(preset.maxContracts, 5);
+
+  const mockIndex: MarketAsset = {
+    symbol: 'US30',
+    name: 'Dow Jones 30 E-mini',
+    type: 'INDEX',
+    instrumentCategory: 'FUTURES',
+    price: 42000,
+    change24h: 0.4,
+    direction: 'BULLISH',
+    dxyCorrelation: 'UNCORRELATED',
+    htfMarketStructure: 'BOS',
+    liquiditySweep: 'NONE',
+    pipSize: 1.0,
+    pointMultiplier: 5, // $5 per point
+    asianRangeHigh: 42100,
+    asianRangeLow: 41900,
+    sessionVwap: 42020,
+    htfOrderBlock: { high: 41950, low: 41900, bias: 'DEMAND' }
+  };
+
+  // 1% risk on $50,000 = $500 risk. 50 point stop loss. 50 * $5 = $250/contract => 2 contracts (<= 5 max)
+  const validRes = calculatePositionRisk({
+    accountBalance: 50000,
+    currentEquity: 50000,
+    todayRealizedPnL: 0,
+    todayStartingBalance: 50000,
+    firmPreset: preset,
+    selectedAsset: mockIndex,
+    entryPrice: 42000,
+    stopLossPrice: 41950, // 50 points
+    takeProfitPrice: 42100,
+    targetRiskPercent: 1.0
+  });
+
+  assert.strictEqual(validRes.contracts, 2);
+  assert.strictEqual(validRes.isHardBlocked, false);
+});
+
